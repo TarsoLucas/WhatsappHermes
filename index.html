@@ -1,16 +1,96 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Whatsapp Hermes</title>
 </head>
-<body>
-    <form onsubmit="" action="">
-        <input id="image" type="image">
-        <label for="image">Escolha a imagem que deseja enviar</label>
-        <textarea name="message" id="message" cols="30" rows="10" placeholder="Digite a mensagem que deseja enviar"></textarea>
+  <body>
+    <form id="form"
+      style="
+      display: flex;
+      "
+    >
+      <div>
+        <label for="image" accept="image/pbg, image/jpg, image/jpeg" >Escolha a imagem que deseja enviar:</label>
+        <input id="image" type="file">
+      </div>
+      <div>
+        <textarea name="message" id="message" cols="50" rows="10" placeholder="Digite a mensagem que deseja enviar"></textarea>
+      </div>
+      <div>
+        <label for="contacts">Escolha o arquivo de contatos</label>
+        <input id="contacts" type="file">
+      </div>
         <button type="submit">Enviar</button>
     </form>
-</body>
+    <!-- <div style="
+      border-right: solid 1px black;
+      width: 1px;
+      height: 100vh;
+    "></div> -->
+    <div>
+      <p>A mensagem que será enviada é:</p>
+      <img style="
+        max-width: 200px;
+        max-height: 200px;
+        " 
+        id="img-pos" src="" alt="">
+      <textarea name="" id="text-pos" cols="30" rows="10"></textarea>
+      <p>Para:</p>
+      <p id="contacts-pos"></p>
+    </div>
+
+    <script>
+      let form = document.getElementById("form")
+      let contacts = document.getElementById("contacts")
+      let text = document.getElementById("message")
+      let image = document.getElementById("image")
+      
+      form.addEventListener("submit", async function(event) {
+        event.preventDefault();
+        
+        const formData = new FormData();
+      
+        formData.append("contacts", contacts.files[0]);
+        formData.append("text", text.value);
+        formData.append("image", image.files[0]);
+        
+        
+        try {
+          const response = await fetch("http://localhost:4000/mensagem", {
+            method: "POST",
+            body: formData
+          });
+          if (response.ok) {
+            alert("Form submitted successfully!");
+          } else {
+            alert("Failed to submit form. Please try again later.");
+          }
+        } catch (error) {
+          console.error("Error submitting form:", error);
+          alert("An error occurred while submitting the form. Please try again later.");
+        }
+      });
+      
+      contacts = document.getElementById("contacts-pos")
+      
+      image.addEventListener("change", function() {
+        const file = this.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function(event) {
+            image = document.getElementById("img-pos")
+            image.src = event.target.result;
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+      text.addEventListener("input", function(){
+        const textValue = this.value
+        text = document.getElementById("text-pos")
+        text.value = textValue
+      })
+    </script>
+  </body>
 </html>
