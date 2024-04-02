@@ -3,20 +3,18 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="lib/css/emoji.css" rel="stylesheet">
     <title>Whatsapp Hermes</title>
 </head>
-  <body>
-    <form id="form"
-      style="
-      display: flex;
-      "
-    >
+  <body style="display: flex;">
+    <form id="form" style="margin-left: 10px;">
       <div>
         <label for="image" accept="image/pbg, image/jpg, image/jpeg" >Escolha a imagem que deseja enviar:</label>
         <input id="image" type="file">
       </div>
       <div>
-        <textarea name="message" id="message" cols="50" rows="10" placeholder="Digite a mensagem que deseja enviar"></textarea>
+        <textarea name="message" id="message" cols="50" rows="10" placeholder="Digite a mensagem que deseja enviar.. use `win` + `.` para inserir emojis"></textarea>
       </div>
       <div>
         <label for="contacts">Escolha o arquivo de contatos</label>
@@ -24,19 +22,19 @@
       </div>
         <button type="submit">Enviar</button>
     </form>
-    <!-- <div style="
+    <div style="
       border-right: solid 1px black;
       width: 1px;
       height: 100vh;
-    "></div> -->
-    <div>
+    "></div>
+    <div style="margin-left: 30px;">
       <p>A mensagem que será enviada é:</p>
       <img style="
         max-width: 200px;
         max-height: 200px;
         " 
         id="img-pos" src="" alt="">
-      <textarea name="" id="text-pos" cols="30" rows="10"></textarea>
+      <textarea data-emojiablo="true" class="emoji-picker-container" id="text-pos" cols="30" rows="10"></textarea>
       <p>Para:</p>
       <p id="contacts-pos"></p>
     </div>
@@ -92,5 +90,23 @@
         text.value = textValue
       })
     </script>
+
+    <script>
+      $(function() {
+          window.emojiPicker = new EmojiPicker({
+          emojiable_selector: '[data-emojiable=true]',
+          assetsPath: '/lib/img/',
+          popupButtonClasses: 'fa fa-smile-o' // far fa-smile if you're using FontAwesome 5
+        });
+        // Finds all elements with `emojiable_selector` and converts them to rich emoji input fields
+        // You may want to delay this step if you have dynamically created input fields that appear later in the loading process
+        // It can be called as many times as necessary; previously converted input fields will not be converted again
+        window.emojiPicker.discover();
+      });
+    </script>
+    <script src="lib/js/config.min.js"></script>
+    <script src="lib/js/util.min.js"></script>
+    <script src="lib/js/jquery.emojiarea.min.js"></script>
+    <script src="lib/js/emoji-picker.min.js"></script>
   </body>
 </html>
