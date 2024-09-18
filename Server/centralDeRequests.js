@@ -1,39 +1,62 @@
-const express = require('express')
-const { Builder, By, Key, until } = require('selenium-webdriver');
-const chrome = require('selenium-webdriver/chrome');
-const contatos = require('./pegarContatos')
-const fs = require('fs')
-const path = require('path')
+const express = require('express');
+const pegarContatos = require('./pegarContatos');
+const { Client } = require('whatsapp-web.js');
+const qrcode = require('qrcode-terminal');
 
 const app = express();
 const port = 4000;
-app.use(cors());
 
-(async function openWhatsAppWeb() {
-    let driver = await new Builder().forBrowser('chrome').build();
+const client = new Client();
 
-    let options = new chrome.Options();
-    options.addArguments('headless');
-    options.addArguments('disable-gpu');
-    options.addArguments('window-size=1280x800');
+let contatos = [];
+let qrCodeBase64 = '';
 
+async function listChats() {
     try {
-        await driver.get('https://web.whatsapp.com');
-        await driver.wait(until.elementLocated(By.css('canvas')), 30000);
-        console.log('WhatsApp Web foi carregado com sucesso. Por favor, escaneie o QR code para continuar.');
-
+        const chats = await client.getChats();
+        console.log('Chats disponíveis:');
+        chats.forEach(chat => {
+            console.log(`ID: ${chat.id._serialized}, Nome: ${chat.name || 'Sem nome'}, Tipo: ${chat.isGroup ? 'Grupo' : 'Indivíduo'}`);
+        });
     } catch (err) {
-        console.error('Erro ao abrir o WhatsApp Web:', err);
+        console.error('Erro ao obter chats:', err);
     }
-    }
-)();
+}
+
+// Evento quando o cliente está pronto
+client.once('ready', () => {
+    console.log('Cliente WhatsApp está pronto!');
+});
+
+client.on('ready', listChats)
+
+client.on('qr', (qr) => {
+    console.log('QR RECEIVED', qr);
+});
+
+client.on('qr', qr => {
+    qrcode.generate(qr, {small: true});
+});
+
+client.initialize();
 
 app.get('/listacontatos', (req, res) => {
-    contatos('nome do arquivo de contatos');
+    contatos = pegarContatos('contatosTeste.txt');
     res.json(contatos);
+
+    // Envia a mensagem "teste" para todos os contatos após a lista ser obtida
+    if (contatos && contatos.length > 0) {
+        const mensagem = "teste";
+        contatos.forEach(numero => {
+            client.sendMessage(`${numero}@c.us`, mensagem).then(response => {
+                console.log(`Mensagem enviada com sucesso para ${numero}:`, response);
+            }).catch(err => {
+                console.error(`Erro ao enviar mensagem para ${numero}:`, err);
+            });
+        });
+    }
 });
 
 app.listen(port, () => {
     console.log(`Servidor rodando em http://localhost:${port}`);
 });
-

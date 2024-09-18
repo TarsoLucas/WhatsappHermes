@@ -1,3 +1,6 @@
+const fs = require('fs')
+const path = require('path')
+
 function pegarContatos(arquivoContatos) {
     const caminhoArquivo = path.join(__dirname, arquivoContatos)
 
@@ -10,4 +13,4 @@ function pegarContatos(arquivoContatos) {
     });
 }
 
-module.exports = { pegarContatos }
+module.exports = pegarContatos 
