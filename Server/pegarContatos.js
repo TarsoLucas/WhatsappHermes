@@ -7,10 +7,8 @@ function pegarContatos(arquivoContatos) {
     const todosContatos = fs.readFileSync(caminhoArquivo, 'utf8')
     
     let contatos = todosContatos.split("\n")
-    
-    contatos.forEach(contato => {
-        console.log(contato)
-    });
+
+    return contatos
 }
 
 module.exports = pegarContatos 
