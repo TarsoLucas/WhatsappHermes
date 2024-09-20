@@ -4,11 +4,21 @@ const path = require('path')
 function pegarContatos(arquivoContatos) {
     const caminhoArquivo = path.join(__dirname, arquivoContatos)
 
-    const todosContatos = fs.readFileSync(caminhoArquivo, 'utf8')
+    const contatos = fs.readFileSync(caminhoArquivo, 'utf8')
     
-    let contatos = todosContatos.split("\n")
+    var telefone, nome
+    var listaContatos = []
 
-    return contatos
+    contato = contatos.split("\n")
+    contato.forEach((contato) => {
+        let hifen = contato.indexOf("-")
+        nome = contato.slice(0, hifen-1).trim()
+        telefone = contato.slice(hifen+1).trim()
+
+        listaContatos.push({ nome, telefone });
+    })
+
+    return listaContatos
 }
 
 module.exports = pegarContatos 

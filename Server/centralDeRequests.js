@@ -1,6 +1,6 @@
 const express = require('express');
 const pegarContatos = require('./pegarContatos');
-const { iniciaSecao, escreveClient} = require('./iniciarSecao')
+const { iniciaSecao, escreveClient, listaChats} = require('./iniciarSecao')
 
 const app = express();
 const port = 4000;
@@ -31,9 +31,14 @@ app.get('/testeClient', (req, res) => {
     res.send('jogou endpont teste');
 });
 
+app.get('/listaChats', (req, res) => {
+    listaChats();
+    res.send('jogou endpont listar chats');
+});
+
 app.get('/listacontatos', (req, res) => {
     contatos = pegarContatos('contatosTeste.txt');
-    res.send(contatos)
+    res.send(contatos.forEach((contato) => console.log("O telefone de", contato.nome, "é", contato.telefone)))
 });
 
 app.listen(port, () => {
