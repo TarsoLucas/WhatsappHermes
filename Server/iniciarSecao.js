@@ -1,4 +1,4 @@
-const { Client } = require('whatsapp-web.js');
+const { Client, MessageMedia } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
 
 const client = new Client();
@@ -50,15 +50,33 @@ async function listaChats() {
     }
 }
 
-function enviaMensagem() {
+function enviaMensagem(listaContatos, mensagem) {
     console.log("bateu aqui - envia msg")
         chats.forEach((chat) => {
-            if (chat.name === "Chele") {
-                chat.sendMessage(`Olá ${chat.name} sou um robo and I will haunt you 💟 😇`)
+            // if (chat.name === "Chele") {
+            //     chat.sendMessage(`Olá ${chat.name} sou um robo and I will haunt you 💟 😇`)
+            //         .then(() => console.log(`Mensagem enviada para ${chat.name} via enviaMsg`))
+            //         .catch(error => console.error(`Erro ao enviar mensagem para ${chat.name}: via enviaMsg`, error));
+            // }
+
+            if (listaContatos.includes(chat.name)) {
+                chat.sendMessage(mensagem)
                     .then(() => console.log(`Mensagem enviada para ${chat.name} via enviaMsg`))
                     .catch(error => console.error(`Erro ao enviar mensagem para ${chat.name}: via enviaMsg`, error));
             }
         })
 }
 
-module.exports = { iniciaSecao, escreveClient, listaChats, enviaMensagem };
+function enviaImagem() {
+    console.log('bateu - envia img')
+
+    const media = MessageMedia.fromFilePath('desktop-1920x1080.jpg')
+
+    chats.forEach((chat) => {
+        if (chat.name === "Chele" || chat.name === "Paula NA" || chat.name === "Elcio NASP" || chat.name === "Matheus-na") {
+            chat.sendMessage(media, {caption: `${chat.name} Testando uma imagem diretamente do bot`})
+        }
+    })
+}
+
+module.exports = { iniciaSecao, escreveClient, listaChats, enviaMensagem, enviaImagem };

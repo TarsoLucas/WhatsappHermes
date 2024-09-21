@@ -132,3 +132,5 @@ dist
 #wwebjs cache
 .wwebjs_cache/
 .wwebjs_auth/
+
+contatosEx.txt

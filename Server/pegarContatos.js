@@ -9,8 +9,9 @@ function pegarContatos(arquivoContatos) {
     var telefone, nome
     var listaContatos = []
 
-    contato = contatos.split("\n")
-    contato.forEach((contato) => {
+    contatosObjeto = contatos.split("\n")
+
+    contatosObjeto.forEach((contato) => {
         let hifen = contato.indexOf("-")
         nome = contato.slice(0, hifen-1).trim()
         telefone = contato.slice(hifen+1).trim()

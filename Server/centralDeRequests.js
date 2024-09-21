@@ -1,25 +1,13 @@
 const express = require('express');
 const pegarContatos = require('./pegarContatos');
-const { iniciaSecao, escreveClient, listaChats, enviaMensagem} = require('./iniciarSecao')
+const { iniciaSecao, escreveClient, listaChats, enviaMensagem, enviaImagem} = require('./iniciarSecao')
 
 const app = express();
 const port = 4000;
 
 var contatos = [];
-
-// async function listChats() {
-//     console.log("entrou na funcao")
-//     try {
-//         console.log("entoru no try")
-//         const chats = await client.getChats();
-//         console.log('Chats disponíveis:');
-//         chats.forEach(chat => {
-//             console.log(`ID: ${chat.id._serialized}, Nome: ${chat.name || 'Sem nome'}, Tipo: ${chat.isGroup ? 'Grupo' : 'Indivíduo'}`);
-//         });
-//     } catch (err) {
-//         console.error('Erro ao obter chats:', err);
-//     }
-// }
+var arquivoContatos = 'contatosTeste.txt'
+var mensagem = `Olá pessoa sigo com testes 💟 😇`
 
 app.get('/iniciaSecao', (req, res) => {
     iniciaSecao();
@@ -37,13 +25,25 @@ app.get('/listaChats', (req, res) => {
 });
 
 app.get('/enviaMensagem', (req, res) => {
-    enviaMensagem();
+    console.log(contatos[0], mensagem)
+    if(contatos && mensagem) {
+        enviaMensagem(contatos, mensagem);
+    }
+    res.send('jogou endpont listar chats');
+});
+
+app.get('/enviaImagem', (req, res) => {
+    enviaImagem();
+
     res.send('jogou endpont listar chats');
 });
 
 app.get('/listacontatos', (req, res) => {
-    contatos = pegarContatos('contatosTeste.txt');
-    res.send(contatos.forEach((contato) => console.log("O telefone de", contato.nome, "é", contato.telefone)))
+    contatos = pegarContatos(arquivoContatos);
+    res.send(contatos.map((contato) => {
+        console.log("O telefone de", contato.nome, "é", contato.telefone); 
+        return contato
+    }))
 });
 
 app.listen(port, () => {
