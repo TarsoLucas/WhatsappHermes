@@ -8,8 +8,8 @@
   },
   "scripts": {
     "start": "node Server/main.js",
-    "build": "cd Client && npm install && npm run build",
-    "postinstall": "cd Server && npm install",
+    "build": "echo 'Build do React já incluído no repositório'",
+    "postinstall": "cd Server && npm install --only=production",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [

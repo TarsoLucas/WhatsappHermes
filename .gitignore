@@ -164,8 +164,8 @@ Thumbs.db
 # Railway
 .railway/
 
-# Build do React (será gerado no deploy)
-Client/build/
+# Build do React - COMENTADO para incluir no repo (Opção A)
+# Client/build/
 
 # Scripts de desenvolvimento (manter no repo)
 # dev.bat
