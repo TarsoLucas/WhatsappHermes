@@ -14,6 +14,9 @@ const Hermes = () => {
   const [qrCode, setQrCode] = useState('');
   const [carregando, setCarregando] = useState(false);
   const [erro, setErro] = useState('');
+  const [categorias, setCategorias] = useState([]);
+  const [categoriaSelecionada, setCategoriaSelecionada] = useState('');
+  const [contatos, setContatos] = useState([]);
   const fileInputRef = useRef(null);
 
   const sendMessagesRequest = async () => {
@@ -24,9 +27,13 @@ const Hermes = () => {
         return;
       }
 
-      const contatos = [
-        { id: "557199632643@c.us", name: "Pops" }
-      ];
+      if (contatos.length === 0) {
+        console.error("Nenhum contato selecionado");
+        alert("Por favor, selecione uma lista de contatos primeiro!");
+        return;
+      }
+
+      console.log("Contatos selecionados:", contatos);
 
       // Enviar todas as mensagens que estão no chat do sistema
       for (const msg of mensagens) {
@@ -197,6 +204,58 @@ const Hermes = () => {
     }, 120000);
   };
 
+  // Função para carregar categorias do banco de dados
+  const carregarCategorias = async () => {
+    try {
+      const response = await fetch(`${API_CONFIG.baseURL}/contatos/categorias`);
+      if (response.ok) {
+        const categoriasData = await response.json();
+        setCategorias(['hardcoded', ...categoriasData]); // Manter hardcoded como primeira opção
+      } else {
+        console.log('Banco de dados não disponível, usando apenas contato hardcoded');
+        setCategorias(['hardcoded']);
+      }
+    } catch (error) {
+      console.log('Erro ao carregar categorias, usando apenas contato hardcoded:', error);
+      setCategorias(['hardcoded']);
+    }
+  };
+
+  // Função para carregar contatos de uma categoria
+  const carregarContatos = async (categoria) => {
+    if (categoria === 'hardcoded') {
+      setContatos([{ id: "557199632643@c.us", name: "Pops" }]);
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_CONFIG.baseURL}/contatos?categoria=${categoria}`);
+      if (response.ok) {
+        const contatosData = await response.json();
+        const contatosFormatados = contatosData.map(contato => ({
+          id: contato.whatsapp_id,
+          name: contato.nome
+        }));
+        setContatos(contatosFormatados);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar contatos:', error);
+      setContatos([]);
+    }
+  };
+
+  // useEffect para carregar categorias quando o componente for montado
+  useEffect(() => {
+    carregarCategorias();
+  }, []);
+
+  // useEffect para carregar contatos quando a categoria mudar
+  useEffect(() => {
+    if (categoriaSelecionada) {
+      carregarContatos(categoriaSelecionada);
+    }
+  }, [categoriaSelecionada]);
+
   if (!sessaoIniciada) {
     return (
       <div className={`flex flex-col items-center justify-center h-screen page-transition ${
@@ -279,15 +338,21 @@ const Hermes = () => {
             </span>
           </div>
 
-          <select className={`w-full p-2 border rounded-lg focus:outline-none focus:ring-2 ${
-            darkMode 
-              ? 'bg-gray-700 border-gray-600 text-white focus:border-emerald-500 focus:ring-emerald-500/20' 
-              : 'bg-white border-gray-300 text-gray-900 focus:border-emerald-500 focus:ring-emerald-500/20'
-          }`}>
-            <option value="a">a</option>
-            <option value="b">b</option>
-            <option value="c">c</option>
-            <option value="fv">fv</option>
+          <select
+            value={categoriaSelecionada}
+            onChange={(e) => setCategoriaSelecionada(e.target.value)}
+            className={`w-full p-2 border rounded-lg focus:outline-none focus:ring-2 ${
+              darkMode
+                ? 'bg-gray-700 border-gray-600 text-white focus:border-emerald-500 focus:ring-emerald-500/20'
+                : 'bg-white border-gray-300 text-gray-900 focus:border-emerald-500 focus:ring-emerald-500/20'
+            }`}
+          >
+            <option value="">Selecione uma lista de contatos</option>
+            {categorias.map((categoria) => (
+              <option key={categoria} value={categoria}>
+                {categoria === 'hardcoded' ? 'Contato de Teste (Hardcoded)' : categoria.charAt(0).toUpperCase() + categoria.slice(1)}
+              </option>
+            ))}
           </select>
 
           <div className='flex items-center space-x-3 shrink-0'>
@@ -301,14 +366,35 @@ const Hermes = () => {
           </div>
 
           <div className={`mt-6 p-4 border rounded-lg shrink-0 ${
-            darkMode 
-              ? 'bg-gray-700 border-gray-600' 
+            darkMode
+              ? 'bg-gray-700 border-gray-600'
               : 'bg-white border-gray-200'
           }`}>
             <h2 className={`font-semibold mb-2 ${darkMode ? 'text-emerald-400' : 'text-gray-900'}`}>
-              Mensagens enviadas para:
+              Contatos selecionados ({contatos.length}):
             </h2>
-            <div className='h-40 overflow-y-auto'></div>
+            <div className='h-40 overflow-y-auto'>
+              {contatos.length > 0 ? (
+                <div className="space-y-2">
+                  {contatos.map((contato, index) => (
+                    <div key={index} className={`p-2 rounded ${
+                      darkMode ? 'bg-gray-600' : 'bg-gray-100'
+                    }`}>
+                      <span className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                        {contato.name}
+                      </span>
+                      <span className={`text-sm ml-2 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                        ({contato.id})
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className={`text-center ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                  Selecione uma lista de contatos acima
+                </p>
+              )}
+            </div>
           </div>
 
           <button

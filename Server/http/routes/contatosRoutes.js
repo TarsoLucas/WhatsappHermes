@@ -23,8 +23,8 @@ const initService = (req, res, next) => {
 // Listar todos os contatos
 router.get('/', initService, async (req, res) => {
     try {
-        const { grupo } = req.query;
-        const contatos = await contatosService.buscarTodos(grupo);
+        const { categoria } = req.query;
+        const contatos = await contatosService.buscarTodos(categoria);
         res.json(contatos);
     } catch (error) {
         console.error('Erro ao buscar contatos:', error);
@@ -32,14 +32,14 @@ router.get('/', initService, async (req, res) => {
     }
 });
 
-// Listar grupos disponíveis
-router.get('/grupos', initService, async (req, res) => {
+// Listar categorias disponíveis
+router.get('/categorias', initService, async (req, res) => {
     try {
-        const grupos = await contatosService.buscarGrupos();
-        res.json(grupos);
+        const categorias = await contatosService.buscarCategorias();
+        res.json(categorias);
     } catch (error) {
-        console.error('Erro ao buscar grupos:', error);
-        res.status(500).json({ error: 'Erro ao buscar grupos' });
+        console.error('Erro ao buscar categorias:', error);
+        res.status(500).json({ error: 'Erro ao buscar categorias' });
     }
 });
 
@@ -60,22 +60,22 @@ router.get('/:id', initService, async (req, res) => {
 // Criar novo contato
 router.post('/', initService, async (req, res) => {
     try {
-        const { nome, telefone, grupo } = req.body;
-        
+        const { nome, telefone, categoria } = req.body;
+
         if (!nome || !telefone) {
             return res.status(400).json({ error: 'Nome e telefone são obrigatórios' });
         }
-        
+
         // Gerar whatsapp_id a partir do telefone
         const whatsapp_id = telefone.replace(/\D/g, '') + '@c.us';
-        
+
         const contato = await contatosService.criar({
             nome,
             telefone,
             whatsapp_id,
-            grupo: grupo || 'geral'
+            categoria: categoria || 'geral'
         });
-        
+
         res.status(201).json(contato);
     } catch (error) {
         console.error('Erro ao criar contato:', error);
@@ -90,26 +90,26 @@ router.post('/', initService, async (req, res) => {
 // Atualizar contato
 router.put('/:id', initService, async (req, res) => {
     try {
-        const { nome, telefone, grupo, ativo } = req.body;
-        
+        const { nome, telefone, categoria, ativo } = req.body;
+
         if (!nome || !telefone) {
             return res.status(400).json({ error: 'Nome e telefone são obrigatórios' });
         }
-        
+
         const whatsapp_id = telefone.replace(/\D/g, '') + '@c.us';
-        
+
         const contato = await contatosService.atualizar(req.params.id, {
             nome,
             telefone,
             whatsapp_id,
-            grupo: grupo || 'geral',
+            categoria: categoria || 'geral',
             ativo: ativo !== undefined ? ativo : true
         });
-        
+
         if (!contato) {
             return res.status(404).json({ error: 'Contato não encontrado' });
         }
-        
+
         res.json(contato);
     } catch (error) {
         console.error('Erro ao atualizar contato:', error);

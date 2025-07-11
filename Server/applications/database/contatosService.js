@@ -6,14 +6,14 @@ class ContatosService {
     }
 
     // Buscar todos os contatos ativos
-    async buscarTodos(grupo = null) {
+    async buscarTodos(categoria = null) {
         try {
             let query = 'SELECT * FROM contatos WHERE ativo = true';
             let params = [];
 
-            if (grupo) {
-                query += ' AND grupo = $1';
-                params.push(grupo);
+            if (categoria) {
+                query += ' AND categoria = $1';
+                params.push(categoria);
             }
 
             query += ' ORDER BY nome';
@@ -26,9 +26,9 @@ class ContatosService {
         }
     }
 
-    // Buscar contatos por grupo
-    async buscarPorGrupo(grupo) {
-        return this.buscarTodos(grupo);
+    // Buscar contatos por categoria
+    async buscarPorCategoria(categoria) {
+        return this.buscarTodos(categoria);
     }
 
     // Buscar contato por ID
@@ -45,11 +45,11 @@ class ContatosService {
     // Criar novo contato
     async criar(dados) {
         try {
-            const { nome, telefone, whatsapp_id, grupo = 'geral' } = dados;
-            
+            const { nome, telefone, whatsapp_id, categoria = 'geral' } = dados;
+
             const result = await this.db.query(
-                'INSERT INTO contatos (nome, telefone, whatsapp_id, grupo) VALUES ($1, $2, $3, $4) RETURNING *',
-                [nome, telefone, whatsapp_id, grupo]
+                'INSERT INTO contatos (nome, telefone, whatsapp_id, categoria) VALUES ($1, $2, $3, $4) RETURNING *',
+                [nome, telefone, whatsapp_id, categoria]
             );
 
             return result.rows[0];
@@ -62,13 +62,13 @@ class ContatosService {
     // Atualizar contato
     async atualizar(id, dados) {
         try {
-            const { nome, telefone, whatsapp_id, grupo, ativo } = dados;
-            
+            const { nome, telefone, whatsapp_id, categoria, ativo } = dados;
+
             const result = await this.db.query(
-                `UPDATE contatos 
-                 SET nome = $1, telefone = $2, whatsapp_id = $3, grupo = $4, ativo = $5, updated_at = CURRENT_TIMESTAMP
+                `UPDATE contatos
+                 SET nome = $1, telefone = $2, whatsapp_id = $3, categoria = $4, ativo = $5, updated_at = CURRENT_TIMESTAMP
                  WHERE id = $6 RETURNING *`,
-                [nome, telefone, whatsapp_id, grupo, ativo, id]
+                [nome, telefone, whatsapp_id, categoria, ativo, id]
             );
 
             return result.rows[0] || null;
@@ -93,15 +93,15 @@ class ContatosService {
         }
     }
 
-    // Buscar grupos disponíveis
-    async buscarGrupos() {
+    // Buscar categorias disponíveis
+    async buscarCategorias() {
         try {
             const result = await this.db.query(
-                'SELECT DISTINCT grupo FROM contatos WHERE ativo = true ORDER BY grupo'
+                'SELECT DISTINCT categoria FROM contatos WHERE ativo = true ORDER BY categoria'
             );
-            return result.rows.map(row => row.grupo);
+            return result.rows.map(row => row.categoria);
         } catch (error) {
-            console.error('Erro ao buscar grupos:', error);
+            console.error('Erro ao buscar categorias:', error);
             throw error;
         }
     }

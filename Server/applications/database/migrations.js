@@ -16,7 +16,7 @@ class Migrations {
                     nome VARCHAR(100) NOT NULL,
                     telefone VARCHAR(20) NOT NULL,
                     whatsapp_id VARCHAR(50) UNIQUE NOT NULL,
-                    grupo VARCHAR(50) DEFAULT 'geral',
+                    categoria VARCHAR(50) DEFAULT 'geral',
                     ativo BOOLEAN DEFAULT true,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -39,7 +39,7 @@ class Migrations {
             // Índices para performance
             await this.db.query(`
                 CREATE INDEX IF NOT EXISTS idx_contatos_whatsapp_id ON contatos(whatsapp_id);
-                CREATE INDEX IF NOT EXISTS idx_contatos_grupo ON contatos(grupo);
+                CREATE INDEX IF NOT EXISTS idx_contatos_categoria ON contatos(categoria);
                 CREATE INDEX IF NOT EXISTS idx_envios_contato_id ON envios(contato_id);
                 CREATE INDEX IF NOT EXISTS idx_envios_enviado_em ON envios(enviado_em);
             `);

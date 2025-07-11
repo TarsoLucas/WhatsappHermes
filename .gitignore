@@ -134,6 +134,7 @@ dist
 #wwebjs cache
 .wwebjs_cache/
 .wwebjs_auth/
+session_data/
 
 contatosEx.txt
 
