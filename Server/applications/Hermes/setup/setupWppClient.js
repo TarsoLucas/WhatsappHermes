@@ -8,29 +8,22 @@ class WhatsappConnection {
 
         if (process.env.NODE_ENV === 'production') {
             clientOptions.puppeteer = {
-                headless: true,
+                headless: 'new',
+                executablePath: '/usr/bin/google-chrome-stable',
                 args: [
                     '--no-sandbox',
                     '--disable-setuid-sandbox',
                     '--disable-dev-shm-usage',
-                    '--disable-accelerated-2d-canvas',
-                    '--no-first-run',
-                    '--no-zygote',
-                    '--single-process',
                     '--disable-gpu',
-                    '--disable-web-security',
-                    '--disable-features=VizDisplayCompositor',
-                    '--disable-background-timer-throttling',
-                    '--disable-backgrounding-occluded-windows',
-                    '--disable-renderer-backgrounding'
-                ],
-                timeout: 60000
+                    '--no-first-run',
+                    '--disable-extensions',
+                    '--disable-default-apps'
+                ]
             };
 
-            // Configurações adicionais para WhatsApp Web.js
-            clientOptions.authTimeoutMs = 60000;
-            clientOptions.takeoverOnConflict = true;
-            clientOptions.takeoverTimeoutMs = 60000;
+            // Configurações mais conservadoras
+            clientOptions.authTimeoutMs = 0; // Sem timeout
+            clientOptions.takeoverOnConflict = false;
         }
 
         this._client = new Client(clientOptions);
@@ -40,25 +33,18 @@ class WhatsappConnection {
     async iniciaSecao() {
         if (this._isReady) return Promise.resolve(this);
 
-        return new Promise((resolve, reject) => {
-            // Timeout personalizado para produção
-            const timeout = process.env.NODE_ENV === 'production' ? 120000 : 60000;
-
-            const timeoutId = setTimeout(() => {
-                reject(new Error('Timeout na inicialização do WhatsApp Web'));
-            }, timeout);
-
-            this._client.once('ready', () => {
-                console.log('Cliente WhatsApp está pronto!');
-                clearTimeout(timeoutId);
-                this._isReady = true;
-                resolve(this);
-            });
+        try {
+            console.log('Iniciando cliente WhatsApp...');
 
             this._client.on('qr', (qr) => {
-                console.log('QR RECEIVED');
+                console.log('QR Code recebido');
                 qrcode.generate(qr, {small: true});
                 this._lastQR = qr;
+            });
+
+            this._client.on('ready', () => {
+                console.log('Cliente WhatsApp está pronto!');
+                this._isReady = true;
             });
 
             this._client.on('disconnected', () => {
@@ -66,18 +52,13 @@ class WhatsappConnection {
                 this._isReady = false;
             });
 
-            this._client.on('auth_failure', (msg) => {
-                console.error('Falha na autenticação:', msg);
-                clearTimeout(timeoutId);
-                reject(new Error('Falha na autenticação: ' + msg));
-            });
+            await this._client.initialize();
+            return this;
 
-            this._client.initialize().catch((error) => {
-                console.error('Erro na inicialização:', error);
-                clearTimeout(timeoutId);
-                reject(error);
-            });
-        });
+        } catch (error) {
+            console.error('Erro na inicialização:', error);
+            throw error;
+        }
     }
 
     getLastQR() {
