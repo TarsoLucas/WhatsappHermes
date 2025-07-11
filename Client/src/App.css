@@ -1,0 +1,149 @@
+@keyframes fadeInGrow {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fadeOutShrink {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInLight {
+  from {
+    opacity: 0;
+    background-color: white;
+  }
+  to {
+    opacity: 1;
+    background-color: white;
+  }
+}
+
+@keyframes fadeInDark {
+  from {
+    opacity: 0;
+    background-color: #111827; /* bg-gray-900 */
+  }
+  to {
+    opacity: 1;
+    background-color: #111827; /* bg-gray-900 */
+  }
+}
+
+.text-animate {
+  font-size: 2rem;
+  color: #333;
+  animation: fadeInGrow 2s forwards, fadeOutShrink 2s 3s forwards;
+}
+
+.second-text-animate{
+  animation: fadeIn 2s forwards
+}
+
+.animate-image{
+  animation: fadeIn 2s forwards, fadeOut 2s 3s forwards;
+}
+
+.white-background {
+  background-color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.animate-message {
+  animation: fadeInGrow 0.3s ease-out forwards;
+  transform-origin: bottom right;
+}
+
+/* Ajuste para evitar flash branco */
+html {
+  background-color: white;
+}
+
+html.dark {
+  background-color: #111827; /* bg-gray-900 */
+}
+
+.page-transition {
+  animation: fadeIn 0.5s ease-in-out;
+  background-color: inherit;
+}
+
+.header-animation {
+  animation: fadeInDown 0.8s ease-out;
+}
+
+.footer-animation {
+  animation: fadeInUp 0.8s ease-out;
+}
+
+/* Transições suaves para mudança de tema */
+* {
+  transition: background-color 0.3s ease-in-out, 
+              border-color 0.3s ease-in-out, 
+              color 0.3s ease-in-out;
+}
+
+/* Exceções para elementos que não devem ter transição */
+.animate-message,
+.animate-image,
+.text-animate,
+.page-transition,
+.header-animation,
+.footer-animation {
+  transition: none;
+}
