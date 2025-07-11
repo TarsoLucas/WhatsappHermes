@@ -1,5 +1,5 @@
 [phases.setup]
-nixPkgs = ['nodejs-18_x', 'chromium']
+nixPkgs = ['nodejs-18_x', 'chromium', 'xvfb-run']
 
 [phases.install]
 cmds = [
@@ -15,3 +15,4 @@ cmd = 'npm start'
 [variables]
 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = 'true'
 PUPPETEER_EXECUTABLE_PATH = '/nix/store/*/bin/chromium'
+DISPLAY = ':99'
