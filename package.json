@@ -1,16 +1,36 @@
 {
-  "name": "whatsapphermes",
+  "name": "whatsapphermes-master",
   "version": "1.0.0",
-  "description": "",
-  "main": "./Server/centralDeRequests.js",
+  "description": "Sistema de automação de mensagens do WhatsApp - Deploy Railway",
+  "main": "Server/main.js",
+  "engines": {
+    "node": "18.x",
+    "npm": "9.x"
+  },
   "scripts": {
+    "start": "node Server/main.js",
+    "dev": "concurrently \"npm run server:dev\" \"npm run client:dev\"",
+    "server:dev": "cd Server && npm run dev",
+    "client:dev": "cd Client && npm start",
+    "server:start": "cd Server && npm start",
+    "client:build": "cd Client && npm run build",
+    "client:install": "cd Client && npm install",
+    "server:install": "cd Server && npm install",
+    "install:all": "npm run server:install && npm run client:install",
+    "build": "npm run client:build",
+    "postinstall": "npm run install:all",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "keywords": [
+    "whatsapp",
+    "automation",
+    "messaging",
+    "railway"
+  ],
   "author": "",
   "license": "ISC",
-  "dependencies": {
-    "qrcode-terminal": "^0.12.0",
-    "whatsapp-web.js": "^1.25.0"
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "nodemon": "^3.1.9"
   }
 }

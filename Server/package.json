@@ -1,0 +1,29 @@
+{
+  "name": "whatsapphermes",
+  "version": "1.0.0",
+  "description": "Sistema de automação de mensagens do WhatsApp",
+  "main": "server.js",
+  "scripts": {
+    "start": "node main.js",
+    "dev": "nodemon main.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "whatsapp",
+    "automation",
+    "messaging"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.18.2",
+    "qrcode-terminal": "^0.12.0",
+    "selenium-webdriver": "^4.18.1",
+    "whatsapp-web.js": "^1.25.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.3"
+  }
+}
