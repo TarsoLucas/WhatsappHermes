@@ -8,13 +8,9 @@
   },
   "scripts": {
     "start": "node Server/main.js",
-    "build": "cd Client && npm ci --only=production && npm run build",
-    "postinstall": "cd Server && npm ci --only=production",
-    "dev": "concurrently \"cd Server && npm run dev\" \"cd Client && npm start\"",
+    "build": "cd Client && npm install && npm run build",
+    "postinstall": "cd Server && npm install",
     "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "dependencies": {
-    "concurrently": "^8.2.2"
   },
   "keywords": [
     "whatsapp",
