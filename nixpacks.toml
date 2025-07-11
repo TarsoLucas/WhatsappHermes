@@ -1,0 +1,17 @@
+[phases.setup]
+nixPkgs = ['nodejs-18_x', 'chromium']
+
+[phases.install]
+cmds = [
+  'cd Server && npm install --only=production'
+]
+
+[phases.build]
+cmds = ['echo "Build do React já incluído no repositório"']
+
+[start]
+cmd = 'npm start'
+
+[variables]
+PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = 'true'
+PUPPETEER_EXECUTABLE_PATH = '/nix/store/*/bin/chromium'

@@ -3,7 +3,26 @@ const qrcode = require('qrcode-terminal');
 
 class WhatsappConnection {
     constructor() {
-        this._client = new Client();
+        // Configurações para produção (Railway)
+        const clientOptions = {};
+
+        if (process.env.NODE_ENV === 'production') {
+            clientOptions.puppeteer = {
+                headless: true,
+                args: [
+                    '--no-sandbox',
+                    '--disable-setuid-sandbox',
+                    '--disable-dev-shm-usage',
+                    '--disable-accelerated-2d-canvas',
+                    '--no-first-run',
+                    '--no-zygote',
+                    '--single-process',
+                    '--disable-gpu'
+                ]
+            };
+        }
+
+        this._client = new Client(clientOptions);
         this._isReady = false;
     }
 
