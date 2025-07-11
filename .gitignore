@@ -166,3 +166,7 @@ Thumbs.db
 
 # Build do React (será gerado no deploy)
 Client/build/
+
+# Scripts de desenvolvimento (manter no repo)
+# dev.bat
+# start-local.bat
