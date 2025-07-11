@@ -4,21 +4,12 @@
   "description": "Sistema de automação de mensagens do WhatsApp - Deploy Railway",
   "main": "Server/main.js",
   "engines": {
-    "node": "18.x",
-    "npm": "9.x"
+    "node": ">=18.0.0"
   },
   "scripts": {
     "start": "node Server/main.js",
-    "dev": "concurrently \"npm run server:dev\" \"npm run client:dev\"",
-    "server:dev": "cd Server && npm run dev",
-    "client:dev": "cd Client && npm start",
-    "server:start": "cd Server && npm start",
-    "client:build": "cd Client && npm run build",
-    "client:install": "cd Client && npm install",
-    "server:install": "cd Server && npm install",
-    "install:all": "npm run server:install && npm run client:install",
-    "build": "npm run client:build",
-    "postinstall": "npm run install:all",
+    "build": "cd Client && npm install && npm run build",
+    "postinstall": "cd Server && npm install",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -28,9 +19,5 @@
     "railway"
   ],
   "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "concurrently": "^8.2.2",
-    "nodemon": "^3.1.9"
-  }
+  "license": "ISC"
 }
