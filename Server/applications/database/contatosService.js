@@ -1,4 +1,6 @@
 const Database = require('./connection');
+const Contato = require('./models/Contato');
+const Envio = require('./models/Envio');
 
 class ContatosService {
     constructor() {
@@ -8,18 +10,15 @@ class ContatosService {
     // Buscar todos os contatos ativos
     async buscarTodos(categoria = null) {
         try {
-            let query = 'SELECT * FROM contatos WHERE ativo = true';
-            let params = [];
+            await this.db.connect();
 
+            let query = { ativo: true };
             if (categoria) {
-                query += ' AND categoria = $1';
-                params.push(categoria);
+                query.categoria = categoria;
             }
 
-            query += ' ORDER BY nome';
-
-            const result = await this.db.query(query, params);
-            return result.rows;
+            const contatos = await Contato.find(query).sort({ nome: 1 });
+            return contatos;
         } catch (error) {
             console.error('Erro ao buscar contatos:', error);
             throw error;
@@ -34,8 +33,9 @@ class ContatosService {
     // Buscar contato por ID
     async buscarPorId(id) {
         try {
-            const result = await this.db.query('SELECT * FROM contatos WHERE id = $1', [id]);
-            return result.rows[0] || null;
+            await this.db.connect();
+            const contato = await Contato.findById(id);
+            return contato;
         } catch (error) {
             console.error('Erro ao buscar contato por ID:', error);
             throw error;
@@ -45,14 +45,11 @@ class ContatosService {
     // Criar novo contato
     async criar(dados) {
         try {
-            const { nome, telefone, whatsapp_id, categoria = 'geral' } = dados;
+            await this.db.connect();
 
-            const result = await this.db.query(
-                'INSERT INTO contatos (nome, telefone, whatsapp_id, categoria) VALUES ($1, $2, $3, $4) RETURNING *',
-                [nome, telefone, whatsapp_id, categoria]
-            );
-
-            return result.rows[0];
+            const contato = new Contato(dados);
+            const contatoSalvo = await contato.save();
+            return contatoSalvo;
         } catch (error) {
             console.error('Erro ao criar contato:', error);
             throw error;
@@ -62,16 +59,13 @@ class ContatosService {
     // Atualizar contato
     async atualizar(id, dados) {
         try {
-            const { nome, telefone, whatsapp_id, categoria, ativo } = dados;
+            await this.db.connect();
 
-            const result = await this.db.query(
-                `UPDATE contatos
-                 SET nome = $1, telefone = $2, whatsapp_id = $3, categoria = $4, ativo = $5, updated_at = CURRENT_TIMESTAMP
-                 WHERE id = $6 RETURNING *`,
-                [nome, telefone, whatsapp_id, categoria, ativo, id]
-            );
-
-            return result.rows[0] || null;
+            const contato = await Contato.findByIdAndUpdate(id, dados, {
+                new: true,
+                runValidators: true
+            });
+            return contato;
         } catch (error) {
             console.error('Erro ao atualizar contato:', error);
             throw error;
@@ -81,12 +75,10 @@ class ContatosService {
     // Desativar contato (soft delete)
     async desativar(id) {
         try {
-            const result = await this.db.query(
-                'UPDATE contatos SET ativo = false, updated_at = CURRENT_TIMESTAMP WHERE id = $1 RETURNING *',
-                [id]
-            );
+            await this.db.connect();
 
-            return result.rows[0] || null;
+            const contato = await Contato.findByIdAndUpdate(id, { ativo: false }, { new: true });
+            return contato;
         } catch (error) {
             console.error('Erro ao desativar contato:', error);
             throw error;
@@ -96,10 +88,10 @@ class ContatosService {
     // Buscar categorias disponíveis
     async buscarCategorias() {
         try {
-            const result = await this.db.query(
-                'SELECT DISTINCT categoria FROM contatos WHERE ativo = true ORDER BY categoria'
-            );
-            return result.rows.map(row => row.categoria);
+            await this.db.connect();
+
+            const categorias = await Contato.distinct('categoria', { ativo: true });
+            return categorias.sort();
         } catch (error) {
             console.error('Erro ao buscar categorias:', error);
             throw error;
@@ -109,12 +101,18 @@ class ContatosService {
     // Registrar envio de mensagem
     async registrarEnvio(contatoId, mensagem, tipo = 'texto', status = 'enviado', erro = null) {
         try {
-            const result = await this.db.query(
-                'INSERT INTO envios (contato_id, mensagem, tipo, status, erro) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-                [contatoId, mensagem, tipo, status, erro]
-            );
+            await this.db.connect();
 
-            return result.rows[0];
+            const envio = new Envio({
+                contato_id: contatoId,
+                mensagem,
+                tipo,
+                status,
+                erro
+            });
+
+            const envioSalvo = await envio.save();
+            return envioSalvo;
         } catch (error) {
             console.error('Erro ao registrar envio:', error);
             throw error;
@@ -124,23 +122,19 @@ class ContatosService {
     // Buscar histórico de envios
     async buscarHistoricoEnvios(contatoId = null, limite = 100) {
         try {
-            let query = `
-                SELECT e.*, c.nome, c.telefone 
-                FROM envios e 
-                JOIN contatos c ON e.contato_id = c.id
-            `;
-            let params = [];
+            await this.db.connect();
 
+            let query = {};
             if (contatoId) {
-                query += ' WHERE e.contato_id = $1';
-                params.push(contatoId);
+                query.contato_id = contatoId;
             }
 
-            query += ' ORDER BY e.enviado_em DESC LIMIT $' + (params.length + 1);
-            params.push(limite);
+            const envios = await Envio.find(query)
+                .populate('contato_id', 'nome telefone')
+                .sort({ createdAt: -1 })
+                .limit(limite);
 
-            const result = await this.db.query(query, params);
-            return result.rows;
+            return envios;
         } catch (error) {
             console.error('Erro ao buscar histórico:', error);
             throw error;

@@ -1,4 +1,6 @@
 const Database = require('./connection');
+const Contato = require('./models/Contato');
+const Envio = require('./models/Envio');
 
 class Migrations {
     constructor() {
@@ -7,76 +9,41 @@ class Migrations {
 
     async createTables() {
         try {
-            console.log('🔄 Criando tabelas do banco de dados...');
+            console.log('🔄 Configurando MongoDB...');
 
-            // Tabela de contatos
-            await this.db.query(`
-                CREATE TABLE IF NOT EXISTS contatos (
-                    id SERIAL PRIMARY KEY,
-                    nome VARCHAR(100) NOT NULL,
-                    telefone VARCHAR(20) NOT NULL,
-                    whatsapp_id VARCHAR(50) UNIQUE NOT NULL,
-                    categoria VARCHAR(50) DEFAULT 'geral',
-                    ativo BOOLEAN DEFAULT true,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                )
-            `);
+            // Conectar ao MongoDB
+            await this.db.connect();
 
-            // Tabela de histórico de envios
-            await this.db.query(`
-                CREATE TABLE IF NOT EXISTS envios (
-                    id SERIAL PRIMARY KEY,
-                    contato_id INTEGER REFERENCES contatos(id),
-                    mensagem TEXT,
-                    tipo VARCHAR(20) DEFAULT 'texto',
-                    status VARCHAR(20) DEFAULT 'enviado',
-                    erro TEXT,
-                    enviado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                )
-            `);
+            // Os modelos Mongoose já criam as coleções automaticamente
+            // Vamos apenas garantir que os índices estão criados
 
-            // Índices para performance
-            await this.db.query(`
-                CREATE INDEX IF NOT EXISTS idx_contatos_whatsapp_id ON contatos(whatsapp_id);
-                CREATE INDEX IF NOT EXISTS idx_contatos_categoria ON contatos(categoria);
-                CREATE INDEX IF NOT EXISTS idx_envios_contato_id ON envios(contato_id);
-                CREATE INDEX IF NOT EXISTS idx_envios_enviado_em ON envios(enviado_em);
-            `);
-
-            console.log('✅ Tabelas criadas com sucesso!');
+            console.log('✅ MongoDB configurado com sucesso!');
             return true;
         } catch (error) {
-            console.error('❌ Erro ao criar tabelas:', error);
+            console.error('❌ Erro ao configurar MongoDB:', error);
             throw error;
         }
     }
 
     async seedInitialData() {
         try {
-            console.log('🌱 Inserindo dados iniciais...');
+            console.log('🌱 Verificando dados iniciais...');
 
             // Verificar se já existem contatos
-            const existingContacts = await this.db.query('SELECT COUNT(*) FROM contatos');
-            if (parseInt(existingContacts.rows[0].count) > 0) {
+            const existingContacts = await Contato.countDocuments();
+            if (existingContacts > 0) {
                 console.log('📋 Dados já existem, pulando seed inicial');
                 return;
             }
 
-            // Inserir contatos de exemplo (baseado no seu contatosTeste.txt)
+            // Inserir contatos de exemplo
             const contatos = [
-                { nome: 'FV Paula', telefone: '+5571999632643', whatsapp_id: '5571999632643@c.us' },
-                { nome: 'C Michele', telefone: '+5571997111098', whatsapp_id: '5571997111098@c.us' },
-                { nome: 'Eu', telefone: '+5571991691800', whatsapp_id: '5571991691800@c.us' }
+                { nome: 'FV Paula', telefone: '+5571999632643', whatsapp_id: '5571999632643@c.us', categoria: 'teste' },
+                { nome: 'C Michele', telefone: '+5571997111098', whatsapp_id: '5571997111098@c.us', categoria: 'teste' },
+                { nome: 'Eu', telefone: '+5571991691800', whatsapp_id: '5571991691800@c.us', categoria: 'teste' }
             ];
 
-            for (const contato of contatos) {
-                await this.db.query(
-                    'INSERT INTO contatos (nome, telefone, whatsapp_id) VALUES ($1, $2, $3)',
-                    [contato.nome, contato.telefone, contato.whatsapp_id]
-                );
-            }
-
+            await Contato.insertMany(contatos);
             console.log('✅ Dados iniciais inseridos com sucesso!');
         } catch (error) {
             console.error('❌ Erro ao inserir dados iniciais:', error);

@@ -1,43 +1,51 @@
-const { Pool } = require('pg');
+const mongoose = require('mongoose');
 
 class Database {
     constructor() {
-        // Railway fornece DATABASE_URL automaticamente
-        this.pool = new Pool({
-            connectionString: process.env.DATABASE_URL,
-            ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
-        });
-        
-        console.log('Conexão com banco de dados configurada');
+        this.isConnected = false;
+        console.log('Conexão MongoDB configurada');
     }
 
-    async query(text, params) {
-        const client = await this.pool.connect();
+    async connect() {
         try {
-            const result = await client.query(text, params);
-            return result;
+            if (this.isConnected) {
+                return true;
+            }
+
+            if (!process.env.DATABASE_URL) {
+                throw new Error('DATABASE_URL não configurada');
+            }
+
+            await mongoose.connect(process.env.DATABASE_URL);
+            this.isConnected = true;
+            console.log('✅ Conectado ao MongoDB');
+            return true;
         } catch (error) {
-            console.error('Erro na query:', error);
-            throw error;
-        } finally {
-            client.release();
+            console.error('❌ Erro ao conectar MongoDB:', error.message);
+            return false;
         }
     }
 
     async testConnection() {
         try {
-            const result = await this.query('SELECT NOW()');
-            console.log('✅ Conexão com banco de dados OK:', result.rows[0]);
-            return true;
+            const connected = await this.connect();
+            if (connected) {
+                console.log('✅ Conexão com MongoDB OK');
+                return true;
+            }
+            return false;
         } catch (error) {
-            console.error('❌ Erro ao conectar com banco:', error.message);
+            console.error('❌ Erro ao testar conexão MongoDB:', error.message);
             return false;
         }
     }
 
     async close() {
-        await this.pool.end();
-        console.log('Conexão com banco de dados fechada');
+        if (this.isConnected) {
+            await mongoose.connection.close();
+            this.isConnected = false;
+            console.log('Conexão MongoDB fechada');
+        }
     }
 }
 

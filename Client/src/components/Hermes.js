@@ -210,7 +210,13 @@ const Hermes = () => {
       const response = await fetch(`${API_CONFIG.baseURL}/contatos/categorias`);
       if (response.ok) {
         const categoriasData = await response.json();
-        setCategorias(['hardcoded', ...categoriasData]); // Manter hardcoded como primeira opção
+        // Criar lista com opções específicas
+        const opcoesCompletas = [
+          'hardcoded',           // Apenas Pops para teste
+          'todos',              // Todos os contatos
+          ...categoriasData     // Categorias específicas (escola, escola_a)
+        ];
+        setCategorias(opcoesCompletas);
       } else {
         console.log('Banco de dados não disponível, usando apenas contato hardcoded');
         setCategorias(['hardcoded']);
@@ -224,10 +230,32 @@ const Hermes = () => {
   // Função para carregar contatos de uma categoria
   const carregarContatos = async (categoria) => {
     if (categoria === 'hardcoded') {
+      // Apenas Pops para teste
       setContatos([{ id: "557199632643@c.us", name: "Pops" }]);
       return;
     }
 
+    if (categoria === 'todos') {
+      // Todos os contatos do banco
+      try {
+        const response = await fetch(`${API_CONFIG.baseURL}/contatos`);
+        if (response.ok) {
+          const contatosData = await response.json();
+          const contatosFormatados = contatosData.map(contato => ({
+            id: contato.whatsapp_id,
+            name: contato.nome
+          }));
+          setContatos(contatosFormatados);
+          console.log(`Carregados ${contatosFormatados.length} contatos (TODOS)`);
+        }
+      } catch (error) {
+        console.error('Erro ao carregar todos os contatos:', error);
+        setContatos([]);
+      }
+      return;
+    }
+
+    // Categoria específica
     try {
       const response = await fetch(`${API_CONFIG.baseURL}/contatos?categoria=${categoria}`);
       if (response.ok) {
@@ -237,6 +265,7 @@ const Hermes = () => {
           name: contato.nome
         }));
         setContatos(contatosFormatados);
+        console.log(`Carregados ${contatosFormatados.length} contatos da categoria: ${categoria}`);
       }
     } catch (error) {
       console.error('Erro ao carregar contatos:', error);
@@ -348,11 +377,26 @@ const Hermes = () => {
             }`}
           >
             <option value="">Selecione uma lista de contatos</option>
-            {categorias.map((categoria) => (
-              <option key={categoria} value={categoria}>
-                {categoria === 'hardcoded' ? 'Contato de Teste (Hardcoded)' : categoria.charAt(0).toUpperCase() + categoria.slice(1)}
-              </option>
-            ))}
+            {categorias.map((categoria) => {
+              let nomeExibicao = '';
+              if (categoria === 'hardcoded') {
+                nomeExibicao = '🧪 Contato de Teste (Pops)';
+              } else if (categoria === 'todos') {
+                nomeExibicao = '📋 Todos os Contatos (861)';
+              } else if (categoria === 'escola_a') {
+                nomeExibicao = '🏫 Escola A (683 contatos)';
+              } else if (categoria === 'escola') {
+                nomeExibicao = '🏫 Escola (280 contatos)';
+              } else {
+                nomeExibicao = categoria.charAt(0).toUpperCase() + categoria.slice(1);
+              }
+
+              return (
+                <option key={categoria} value={categoria}>
+                  {nomeExibicao}
+                </option>
+              );
+            })}
           </select>
 
           <div className='flex items-center space-x-3 shrink-0'>
