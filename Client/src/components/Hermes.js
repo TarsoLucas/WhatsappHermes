@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPaperPlane, faPaperclip, faTrash, faBolt, faRobot } from '@fortawesome/free-solid-svg-icons';
 import { ThemeContext } from '../context/ThemeContext';
 import API_CONFIG from '../config/api';
+import contatosJson from '../data/contatos.json';
 
 const Hermes = () => {
   const { darkMode } = useContext(ThemeContext);
@@ -20,20 +21,23 @@ const Hermes = () => {
   const fileInputRef = useRef(null);
 
   const sendMessagesRequest = async () => {
-    console.log("Enviando mensagens")
+    console.log("🚀 DEBUG: Iniciando envio de mensagens")
     try {
       if (mensagens.length === 0) {
-        console.error("Nenhuma mensagem para enviar");
+        console.error("❌ Nenhuma mensagem para enviar");
         return;
       }
 
+      console.log(`📋 DEBUG: ${contatos.length} contatos no estado atual`);
+      console.log("🔍 DEBUG: Contatos atuais:", contatos);
+
       if (contatos.length === 0) {
-        console.error("Nenhum contato selecionado");
+        console.error("❌ Nenhum contato selecionado");
         alert("Por favor, selecione uma lista de contatos primeiro!");
         return;
       }
 
-      console.log("Contatos selecionados:", contatos);
+      console.log(`✅ DEBUG: Enviando para ${contatos.length} contatos:`, contatos);
 
       // Enviar todas as mensagens que estão no chat do sistema
       for (const msg of mensagens) {
@@ -213,62 +217,104 @@ const Hermes = () => {
         // Criar lista com opções específicas
         const opcoesCompletas = [
           'hardcoded',           // Apenas Pops para teste
+          'hardcoded_json',      // Contatos do arquivo JSON
           'todos',              // Todos os contatos
           ...categoriasData     // Categorias específicas (escola, escola_a)
         ];
         setCategorias(opcoesCompletas);
       } else {
-        console.log('Banco de dados não disponível, usando apenas contato hardcoded');
-        setCategorias(['hardcoded']);
+        console.log('Banco de dados não disponível, usando apenas contatos hardcoded');
+        setCategorias(['hardcoded', 'hardcoded_json']);
       }
     } catch (error) {
-      console.log('Erro ao carregar categorias, usando apenas contato hardcoded:', error);
-      setCategorias(['hardcoded']);
+      console.log('Erro ao carregar categorias, usando apenas contatos hardcoded:', error);
+      setCategorias(['hardcoded', 'hardcoded_json']);
     }
   };
 
   // Função para carregar contatos de uma categoria
   const carregarContatos = async (categoria) => {
+    console.log(`🔍 DEBUG: carregarContatos chamada com categoria: "${categoria}"`);
+
     if (categoria === 'hardcoded') {
       // Apenas Pops para teste
+      console.log('🧪 Carregando contato hardcoded (Pops)');
       setContatos([{ id: "557199632643@c.us", name: "Pops" }]);
+      return;
+    }
+
+    if (categoria === 'hardcoded_json') {
+      // Contatos do arquivo JSON
+      console.log('📄 Carregando contatos do arquivo JSON');
+      const contatosFormatados = contatosJson.map(contato => ({
+        id: `55${contato.telefone.replace(/\D/g, '')}@c.us`, // Formatar telefone para WhatsApp ID
+        name: contato.nome
+      }));
+      console.log(`✅ Carregados ${contatosFormatados.length} contatos do JSON`);
+      setContatos(contatosFormatados);
       return;
     }
 
     if (categoria === 'todos') {
       // Todos os contatos do banco
+      console.log('📋 Carregando TODOS os contatos do banco...');
       try {
-        const response = await fetch(`${API_CONFIG.baseURL}/contatos`);
+        const url = `${API_CONFIG.baseURL}/contatos`;
+        console.log(`🌐 Fazendo fetch para: ${url}`);
+        const response = await fetch(url);
+        console.log(`📡 Response status: ${response.status}`);
+
         if (response.ok) {
           const contatosData = await response.json();
+          console.log(`📊 Dados recebidos da API: ${contatosData.length} contatos`);
+
           const contatosFormatados = contatosData.map(contato => ({
             id: contato.whatsapp_id,
             name: contato.nome
           }));
+
+          console.log(`✅ Contatos formatados: ${contatosFormatados.length}`);
+          console.log('🔍 Primeiros 3 contatos:', contatosFormatados.slice(0, 3));
+
           setContatos(contatosFormatados);
-          console.log(`Carregados ${contatosFormatados.length} contatos (TODOS)`);
+          console.log(`✅ Estado atualizado com ${contatosFormatados.length} contatos (TODOS)`);
+        } else {
+          console.error(`❌ Response não OK: ${response.status} ${response.statusText}`);
         }
       } catch (error) {
-        console.error('Erro ao carregar todos os contatos:', error);
+        console.error('❌ Erro ao carregar todos os contatos:', error);
         setContatos([]);
       }
       return;
     }
 
     // Categoria específica
+    console.log(`🏫 Carregando contatos da categoria: ${categoria}`);
     try {
-      const response = await fetch(`${API_CONFIG.baseURL}/contatos?categoria=${categoria}`);
+      const url = `${API_CONFIG.baseURL}/contatos?categoria=${categoria}`;
+      console.log(`🌐 Fazendo fetch para: ${url}`);
+      const response = await fetch(url);
+      console.log(`📡 Response status: ${response.status}`);
+
       if (response.ok) {
         const contatosData = await response.json();
+        console.log(`📊 Dados recebidos da API: ${contatosData.length} contatos`);
+
         const contatosFormatados = contatosData.map(contato => ({
           id: contato.whatsapp_id,
           name: contato.nome
         }));
+
+        console.log(`✅ Contatos formatados: ${contatosFormatados.length}`);
+        console.log('🔍 Primeiros 3 contatos:', contatosFormatados.slice(0, 3));
+
         setContatos(contatosFormatados);
-        console.log(`Carregados ${contatosFormatados.length} contatos da categoria: ${categoria}`);
+        console.log(`✅ Estado atualizado com ${contatosFormatados.length} contatos da categoria: ${categoria}`);
+      } else {
+        console.error(`❌ Response não OK: ${response.status} ${response.statusText}`);
       }
     } catch (error) {
-      console.error('Erro ao carregar contatos:', error);
+      console.error('❌ Erro ao carregar contatos:', error);
       setContatos([]);
     }
   };
@@ -381,6 +427,8 @@ const Hermes = () => {
               let nomeExibicao = '';
               if (categoria === 'hardcoded') {
                 nomeExibicao = '🧪 Contato de Teste (Pops)';
+              } else if (categoria === 'hardcoded_json') {
+                nomeExibicao = '📄 Lista Completa Hardcoded (2423 contatos)';
               } else if (categoria === 'todos') {
                 nomeExibicao = '📋 Todos os Contatos (861)';
               } else if (categoria === 'escola_a') {

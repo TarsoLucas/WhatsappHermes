@@ -4,7 +4,7 @@ const path = require('path');
 
 class WhatsappConnection {
     constructor() {
-        // Configurações para produção (Railway)
+        // Configurações base
         const clientOptions = {
             // Configurar LocalAuth para persistência de sessão
             authStrategy: new LocalAuth({
@@ -14,6 +14,7 @@ class WhatsappConnection {
         };
 
         if (process.env.NODE_ENV === 'production') {
+            // Configurações para produção (Railway/Linux)
             clientOptions.puppeteer = {
                 headless: 'new',
                 executablePath: '/usr/bin/google-chrome-stable',
@@ -31,6 +32,22 @@ class WhatsappConnection {
             // Configurações mais conservadoras
             clientOptions.authTimeoutMs = 0; // Sem timeout
             clientOptions.takeoverOnConflict = false;
+        } else {
+            // Configurações para desenvolvimento (Windows/Local)
+            console.log('🔧 Configurando Puppeteer para desenvolvimento Windows');
+
+            // Limpar variáveis de ambiente problemáticas
+            delete process.env.PUPPETEER_EXECUTABLE_PATH;
+            delete process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD;
+
+            clientOptions.puppeteer = {
+                headless: false, // Mostrar navegador em desenvolvimento para debug
+                args: [
+                    '--no-sandbox',
+                    '--disable-setuid-sandbox'
+                ]
+                // Não definir executablePath - deixar o Puppeteer encontrar automaticamente
+            };
         }
 
         this._client = new Client(clientOptions);

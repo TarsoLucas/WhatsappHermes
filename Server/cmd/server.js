@@ -50,14 +50,37 @@ class Server {
         // API routes
         this.app.use('/', routes);
 
-        // Servir arquivos estáticos do React (apenas em produção)
-        if (process.env.NODE_ENV === 'production') {
-            const clientBuildPath = path.join(__dirname, '../../Client/build');
+        // Servir arquivos estáticos do React
+        const clientBuildPath = path.join(__dirname, '../../Client/build');
+
+        // Verificar se o diretório build existe
+        if (require('fs').existsSync(clientBuildPath)) {
+            console.log('📁 Servindo arquivos estáticos do React build');
             this.app.use(express.static(clientBuildPath));
 
             // Catch all handler: enviar index.html para qualquer rota não-API
             this.app.get('*', (req, res) => {
                 res.sendFile(path.join(clientBuildPath, 'index.html'));
+            });
+        } else {
+            console.log('⚠️ Diretório Client/build não encontrado');
+            console.log('💡 Execute: cd Client && npm run build');
+
+            // Rota temporária para desenvolvimento
+            this.app.get('/', (req, res) => {
+                res.send(`
+                    <h1>WhatsApp Hermes - Servidor Funcionando!</h1>
+                    <p>Para usar a interface:</p>
+                    <ol>
+                        <li>Execute: <code>cd Client && npm run build</code></li>
+                        <li>Reinicie o servidor</li>
+                    </ol>
+                    <p>Ou acesse as APIs diretamente:</p>
+                    <ul>
+                        <li><a href="/contatos">/contatos</a> - Ver todos os contatos</li>
+                        <li><a href="/contatos/categorias">/contatos/categorias</a> - Ver categorias</li>
+                    </ul>
+                `);
             });
         }
     }
