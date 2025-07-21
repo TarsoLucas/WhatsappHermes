@@ -3,7 +3,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPaperPlane, faPaperclip, faTrash, faBolt, faRobot } from '@fortawesome/free-solid-svg-icons';
 import { ThemeContext } from '../context/ThemeContext';
 import API_CONFIG from '../config/api';
-import contatosJson from '../data/contatos.json';
 
 const Hermes = () => {
   const { darkMode } = useContext(ThemeContext);
@@ -210,25 +209,31 @@ const Hermes = () => {
 
   // Função para carregar categorias do banco de dados
   const carregarCategorias = async () => {
+    // SEMPRE incluir as opções hardcoded, independente do banco
+    const opcoesBase = [
+      'hardcoded',           // Apenas Pops para teste
+      'hardcoded_json',      // Contatos do arquivo JSON (2423 contatos)
+    ];
+
     try {
       const response = await fetch(`${API_CONFIG.baseURL}/contatos/categorias`);
       if (response.ok) {
         const categoriasData = await response.json();
         // Criar lista com opções específicas
         const opcoesCompletas = [
-          'hardcoded',           // Apenas Pops para teste
-          'hardcoded_json',      // Contatos do arquivo JSON
-          'todos',              // Todos os contatos
-          ...categoriasData     // Categorias específicas (escola, escola_a)
+          ...opcoesBase,        // Opções hardcoded sempre disponíveis
+          'todos',              // Todos os contatos do banco
+          ...categoriasData     // Categorias específicas do banco (a, b, c, fv, etc.)
         ];
         setCategorias(opcoesCompletas);
+        console.log('✅ Categorias carregadas:', opcoesCompletas);
       } else {
         console.log('Banco de dados não disponível, usando apenas contatos hardcoded');
-        setCategorias(['hardcoded', 'hardcoded_json']);
+        setCategorias(opcoesBase);
       }
     } catch (error) {
       console.log('Erro ao carregar categorias, usando apenas contatos hardcoded:', error);
-      setCategorias(['hardcoded', 'hardcoded_json']);
+      setCategorias(opcoesBase);
     }
   };
 
@@ -245,13 +250,34 @@ const Hermes = () => {
 
     if (categoria === 'hardcoded_json') {
       // Contatos do arquivo JSON
-      console.log('📄 Carregando contatos do arquivo JSON');
-      const contatosFormatados = contatosJson.map(contato => ({
-        id: `55${contato.telefone.replace(/\D/g, '')}@c.us`, // Formatar telefone para WhatsApp ID
-        name: contato.nome
-      }));
-      console.log(`✅ Carregados ${contatosFormatados.length} contatos do JSON`);
-      setContatos(contatosFormatados);
+      console.log('📄 Carregando contatos do arquivo JSON via fetch');
+      try {
+        // Carregar o arquivo JSON via fetch
+        const response = await fetch('/data/contatos.json');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const contatosJson = await response.json();
+
+        console.log('🔍 DEBUG: contatosJson carregado:', contatosJson ? `Array com ${contatosJson.length} itens` : 'undefined/null');
+
+        if (!contatosJson || !Array.isArray(contatosJson)) {
+          console.error('❌ Erro: contatosJson não é um array válido');
+          setContatos([]);
+          return;
+        }
+
+        const contatosFormatados = contatosJson.map(contato => ({
+          id: `55${contato.telefone.replace(/\D/g, '')}@c.us`, // Formatar telefone para WhatsApp ID
+          name: contato.nome
+        }));
+        console.log(`✅ Carregados ${contatosFormatados.length} contatos do JSON`);
+        console.log('🔍 Primeiros 3 contatos:', contatosFormatados.slice(0, 3));
+        setContatos(contatosFormatados);
+      } catch (error) {
+        console.error('❌ Erro ao carregar arquivo JSON:', error);
+        setContatos([]);
+      }
       return;
     }
 
